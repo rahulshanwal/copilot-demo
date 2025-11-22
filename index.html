@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering GitHub Copilot: Workshop Edition</title>
+    <style>
+        /* --- THEME: Ciena Style (Red/White/Black) --- */
+        :root {
+            --primary-red: #D32F2F; 
+            --secondary-red: #FF5252; 
+            --text-black: #212121;
+            --bg-white: #ffffff;
+            --code-bg: #f5f5f5;
+            --process-blue: #E3F2FD; 
+            --process-border: #2196F3;
+            --bingo-bg: #FFF3E0;
+            --bingo-border: #FF9800;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-black);
+            background-color: var(--bg-white);
+            overflow: hidden; 
+        }
+
+        /* --- LAYOUT: Horizontal Scroll --- */
+        .slide-wrapper {
+            height: 100vh;
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            will-change: transform; 
+        }
+
+        .slide {
+            height: 100%;
+            display: flex;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10; 
+            overflow: hidden; 
+        }
+        
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 15%; 
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-red) 0%, var(--secondary-red) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+            box-sizing: border-box;
+            color: white;
+            flex-shrink: 0; 
+        }
+
+        .sidebar-logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .slide-number {
+            font-size: 3rem;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+
+        /* --- CONTENT --- */
+        .content {
+            width: 85%;
+            padding: 4rem 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+            background-color: var(--bg-white); 
+            overflow: hidden; 
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-red);
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-black);
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            color: var(--secondary-red);
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            max-width: 1200px;
+        }
+
+        ul {
+            padding-left: 2rem;
+        }
+
+        /* Process Diagram Styling */
+        .process-step {
+            background-color: #fff0f0;
+            border-left: 5px solid var(--primary-red);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .process-step strong {
+            /* color: #1565C0; */
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Interactive Elements */
+        .quiz-box {
+            background-color: #e0f7fa;
+            border: 2px dashed #006064;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .quiz-box:hover {
+            background-color: #b2ebf2;
+            transform: scale(1.02);
+        }
+        .quiz-answer {
+            display: none;
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #006064;
+            font-size: 1.5rem;
+        }
+        .quiz-box.revealed .quiz-answer {
+            display: block;
+        }
+        .quiz-box.revealed .quiz-question {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* Bingo Card Styling */
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            max-width: 800px;
+        }
+        .bingo-cell {
+            background-color: var(--bingo-bg);
+            border: 2px solid var(--bingo-border);
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background-color: #fff0f0;
+            border: 1px solid var(--secondary-red);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            border-left: 5px solid var(--primary-red);
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 0 8px 8px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Navigation Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        button {
+            background-color: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-red);
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .flex-row { display: flex; gap: 2rem; }
+        .col-50 { flex: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div class="slide-wrapper" id="slideWrapper"> 
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">INTRO</div>
+                <div class="slide-number">01</div>
+            </div>
+            <div class="content">
+                <h1>Mastering GitHub Copilot</h1>
+                <h2>Adopting Your New AI Pair Programmer</h2>
+                <p><strong>Presenter:</strong> Rahul Shanwal</p>
+                <p style="margin-top: 2rem; font-size: 1.2rem; color: #666;">
+                    A guide to integrating AI into your daily workflow,<br>from basic autocomplete to advanced architectural refactoring.
+                </p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">MINDSET</div>
+                <div class="slide-number">02</div>
+            </div>
+            <div class="content">
+                <h2>The Mental Model</h2>
+                <h3>Copilot is your "Super-Smart Intern"</h3>
+                <div class="flex-row">
+                    <div class="col-50">
+                        <p>Imagine a brilliant intern who has read every documentation page on the internet.</p>
+                        <ul>
+                            <li><strong>They know syntax</strong> perfectly.</li>
+                            <li><strong>They know patterns</strong> (React, Ember, Redux).</li>
+                            <li><strong>BUT:</strong> They don't know *our* business logic or *our* coding style or *our* architecture... unless you tell them.</li>
+                        </ul>
+                    </div>
+                    <div class="col-50 highlight-box">
+                        <strong>The Golden Rule:</strong><br>
+                        If you give an intern vague instructions, you get bad code.<br>
+                        If you give Copilot vague prompts, you get hallucinations.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">GAME</div>
+                <div class="slide-number">03</div>
+            </div>
+            <div class="content">
+                <h2>Challenge: The "Turing Test"</h2>
+                <h3>Who wrote this code? (Junior Dev vs. Copilot)</h3>
+                
+                <div class="flex-row">
+                    <div class="col-50 quiz-box" onclick="this.classList.toggle('revealed')">
+                        <div class="quiz-question">
+                            <pre>function sum(a, b) {
+  // TODO: finish this later
+  return a + b; 
+}</pre>
+                            <p class="text-center">👉 Click to Reveal</p>
+                        </div>
+                        <div class="quiz-answer text-center">HUMAN (The comment gives it away!)</div>
+                    </div>
+                    
+                    <div class="col-50 quiz-box" onclick="this.classList.toggle('revealed')">
+                        <div class="quiz-question">
+                            <pre>// A function to calculate fibonacci
+// optimized for speed
+const fib = n => { ... }</pre>
+                             <p class="text-center">👉 Click to Reveal</p>
+                        </div>
+                        <div class="quiz-answer text-center">COPILOT (It loves generic comments)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">MODES</div>
+                <div class="slide-number">04</div>
+            </div>
+            <div class="content">
+                <h2>How to Interact (The Interface)</h2>
+                <p>Copilot lives in three places in your editor:</p>
+                <ul>
+                    <li><strong>1. Ghost Text (Inline):</strong> The grey text you see while typing. Best for boilerplate.</li>
+                    <li><strong>2. Copilot Chat (Sidebar):</strong> A conversation. Best for architectural planning.</li>
+                    <li><strong>3. Inline Chat (Cmd+I):</strong> Highlight code and ask for changes directly.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">ENGINE</div>
+                <div class="slide-number">05</div>
+            </div>
+            <div class="content">
+                <h2>Under the Hood: The Lifecycle of a Prompt</h2>
+                <div class="flex-row">
+                    <div class="col-50">
+                         <div class="process-step">
+                            <strong>1. Input & Context Gathering</strong>
+                            Copilot grabs relevant snippets from <b>open tabs</b>, <b>cursor position</b>, and <b>recent history</b>.
+                        </div>
+                        <div class="process-step">
+                            <strong>3. Tokenization</strong>
+                            Text is converted into "Tokens" (number representations). The LLM predicts the next numbers.
+                        </div>
+                    </div>
+                    <div class="col-50">
+                        <div class="process-step">
+                            <strong>2. Prompt Construction</strong>
+                            It wraps your input (i.e the "user prompt") in a hidden "System Prompt" to guide the model.
+                        </div> 
+                        <div class="process-step">
+                            <strong>4. Prediction</strong>
+                            The model (GPT-4o/ Claude/ Gemini) predicts the most likely response tokens and sends back responses.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">GAME</div>
+                <div class="slide-number">06</div>
+            </div>
+            <div class="content">
+                <h2>Challenge: "Guess the Token"</h2>
+                <p>AI doesn't read words. It reads numbers (tokens). Let's see if you can think like an LLM.</p>
+                
+                <div class="quiz-box" onclick="this.classList.toggle('revealed')">
+                    <h3>Pop Quiz: How many tokens is the word "Hamburger"?</h3>
+                    <div class="quiz-question" style="font-size: 2rem; text-align: center; margin: 2rem;">
+                        Option A: 1<br>
+                        Option B: 3
+                    </div>
+                    <div class="quiz-answer text-center">
+                        Answer: B (3 Tokens) -> "Ham", "bur", "ger"<br>
+                        <span style="font-size: 1rem; font-weight: normal; color: #333;">(This is why AI sometimes struggles with spelling!)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">PROMPTS</div>
+                <div class="slide-number">07</div>
+            </div>
+            <div class="content">
+                <h2>Prompt Engineering: The 3 S's</h2>
+                <p>Garbage In, Garbage Out. How to talk so the machine listens.</p>
+                
+                <div class="highlight-box" style="padding: 1rem;">
+                    <h3>1. Simple</h3>
+                    <p>Break complex tasks down. Don't ask for a whole app. Ask for the layout, then the logic, then the styles.</p>
+                </div>
+                <div class="highlight-box" style="margin-top: 1rem; padding: 1rem;">
+                    <h3>2. Specific</h3>
+                    <p>Be explicit. <em>"Create a login form using <strong>React Hook Form</strong> and <strong>Zod</strong>."</em></p>
+                </div>
+                <div class="highlight-box" style="margin-top: 1rem; padding: 1rem;">
+                    <h3>3. Sample</h3>
+                    <p>Provide examples. "Make it look like the `Button.tsx` component."</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">GAME</div>
+                <div class="slide-number">08</div>
+            </div>
+            <div class="content">
+                <h2>Challenge: Fix This Prompt</h2>
+                <p>Use the 3 S's (Simple, Specific, Sample) to fix this.</p>
+                
+                <div class="flex-row">
+                    <div class="col-50">
+                        <div class="quiz-box" style="border-color: #D32F2F; background-color: #FFEBEE;">
+                            <h3>❌ Bad Prompt</h3>
+                            <p>"Write a component for the user data."</p>
+                        </div>
+                    </div>
+                    <div class="col-50">
+                        <div class="quiz-box revealed" style="border-color: #388E3C; background-color: #E8F5E9;">
+                            <h3>✅ Good Prompt</h3>
+                            <ul class="quiz-answer" style="display: block; font-size: 1.2rem; color: #2E7D32;">
+                                <li>"Create a React Functional Component..." <strong>(Specific)</strong></li>
+                                <li>"...that displays UserProfile data using Zod validation..." <strong>(Specific)</strong></li>
+                                <li>"...similar to the layout in `ProfileCard.tsx`." <strong>(Sample)</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">CONTEXT</div>
+                <div class="slide-number">09</div>
+            </div>
+            <div class="content">
+                <h2>Context Engineering: Strategies</h2>
+                <p>The #1 reason for bad answers is missing context.</p>
+                
+                <h3>Strategies for Better Context</h3>
+                <ul>
+                    <li><strong>The "Open Tab" Strategy:</strong> Keep the 3-4 most relevant files open. Copilot prioritizes these above all else.</li>
+                    <li><strong>Naming Hygiene:</strong> Use descriptive variable names (`isUserLoggedIn` vs `flag`).</li>
+                    <li><strong>Precision Context:</strong>
+                        <ul>
+                            <li><code>#file</code>: Explicitly reference a file.</li>
+                            <li><code>#selection</code>: Focus strictly on highlighted code.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">RULES</div>
+                <div class="slide-number">10</div>
+            </div>
+            <div class="content">
+                <h2>Scaling Context: `.instructions.md`</h2>
+                <p>Don't repeat yourself. Automate your team standards.</p>
+                <pre><code># Project Standards (.github/copilot-instructions.md)
+- All components must be Functional React Components.
+- Use `const` over `let`.
+- When migrating from Ember, preserve `data-test-id`.</code></pre>
+                <p>Copilot will now <strong>always</strong> read this file before answering.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">META</div>
+                <div class="slide-number">11</div>
+            </div>
+            <div class="content">
+                <h2>Meta-Prompting: Use AI to Build AI</h2>
+                <p>Don't write the prompt. Ask Copilot to write the prompt.</p>
+                <div class="flex-row">
+                    <div class="col-50">
+                        <h3>The Request</h3>
+                        <pre><code>"I want to migrate a folder of Ember components to React. 
+Write me a perfect prompt I can give to the @workspace agent 
+to do this in bulk, preserving our CSS modules."</code></pre>
+                    </div>
+                    <div class="col-50 highlight-box">
+                        <h3>The Result</h3>
+                        <p>Copilot generates a highly specific, paragraph-long prompt. Copy that output, and feed it back into the agent.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">MISSION</div>
+                <div class="slide-number">12</div>
+            </div>
+            <div class="content">
+                <h2>The Live Demo: Frost Bunsen</h2>
+                <p>I applied everything we just learnt.</p>
+                <ul>
+                    <li><strong>The Task:</strong> Convert the Ember <code>frost-bunsen</code> Addon to a <code>react-frost-bunsen</code> React Library.</li>
+                    <li><strong>The Tools:</strong> Copilot Chat, `.instructions.md`, and Open Tab context.</li>
+                    <li><strong>The Goal:</strong> A working library with an examples page.</li>
+                </ul>
+                <p style="margin-top: 2rem; font-weight: bold; color: var(--primary-red); font-size: 2rem;">Let's switch to VS Code.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">BINGO</div>
+                <div class="slide-number">13</div>
+            </div>
+            <div class="content text-center">
+                <h1 style="font-size: 4rem;">LIVE DEMO BINGO</h1>
+                <p>Spot these moments during the demo!</p>
+                
+                <div class="bingo-grid">
+                    <div class="bingo-cell">Copilot Hallucinates<br>(Made up code)</div>
+                    <div class="bingo-cell">Presenter uses<br>Shortcut (Cmd+I)</div>
+                    <div class="bingo-cell">"I need to fix<br>that prompt"</div>
+                    <div class="bingo-cell">A Test Fails<br>First Try</div>
+                    <div class="bingo-cell" style="background-color: #FFCC80;">FREE SPACE<br>(It works!)</div>
+                    <div class="bingo-cell">Refactoring<br>> 2 Files</div>
+                    <div class="bingo-cell">Uses @workspace<br>command</div>
+                    <div class="bingo-cell">Explains a<br>Legacy Bug</div>
+                    <div class="bingo-cell">Audience asks<br>a question</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">TOOLKIT</div>
+                <div class="slide-number">14</div>
+            </div>
+            <div class="content">
+                <h2>The Power User Toolkit</h2>
+                <div class="flex-row">
+                    <div class="col-50">
+                        <h3>1. Keyboard Ninjutsu</h3>
+                        <ul>
+                            <li><code>Ctrl + -></code>: <strong>Partial Accept.</strong></li>
+                            <li><code>Alt + ]</code>: <strong>Cycle Suggestions.</strong></li>
+                            <li><code>Ctrl + Enter</code>: <strong>Completions Panel.</strong></li>
+                        </ul>
+                    </div>
+                    <div class="col-50">
+                        <h3>2. Vision & Slash Commands</h3>
+                        <p>Drag screenshots into Chat to fix UI bugs.</p>
+                        <ul>
+                            <li><code>/fix</code>: Fix highlighted error.</li>
+                            <li><code>/doc</code>: Auto-generate JSDoc (The "Senior Dev" button).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">NEWS</div>
+                <div class="slide-number">15</div>
+            </div>
+            <div class="content">
+                <h2>Universe 2025 Updates (Nov 2025)</h2>
+                <p>The bleeding edge of AI development.</p>
+                <div class="flex-row">
+                     <div class="col-50">
+                        <h3>1. Multi-Model Choice</h3>
+                        <p>Switch instantly between <strong>GPT-5</strong>, <strong>Claude Sonnet 4.5</strong>, and <strong>Gemini 3 Pro</strong>.</p>
+                        <h3>2. Agent HQ</h3>
+                        <p>Orchestrate specialized agents (Documentation Agent, Security Agent) to handle complex workflows.</p>
+                    </div>
+                    <div class="col-50">
+                        <h3>3. Plan Mode</h3>
+                        <p>Copilot builds a step-by-step implementation plan <em>before</em> coding.</p>
+                        <h3>4. Copilot Edits</h3>
+                        <p>Refactor across your entire codebase simultaneously.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">WRAP UP</div>
+                <div class="slide-number">16</div>
+            </div>
+            <div class="content">
+                <h2>The Mindset Shift</h2>
+                <div class="highlight-box">
+                    <p><strong>1. Less Typing, More Thinking:</strong> You are no longer a bricklayer; you are the architect.</p>
+                    <p><strong>2. Verify Everything:</strong> Your "Intern" makes mistakes. Code Review is now your primary job.</p>
+                    <p><strong>3. Context is King:</strong> The quality of the output depends entirely on the input.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="sidebar">
+                <div class="sidebar-logo">Q&A</div>
+                <div class="slide-number">17</div>
+            </div>
+            <div class="content text-center">
+                <h1 style="font-size: 6rem; color: var(--primary-red);">Q & A</h1>
+                <h2 style="margin-top: 1rem;">Thank You!</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button onclick="prevSlide()">&#8592; Previous</button>
+        <button onclick="nextSlide()">Next &#8594;</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length; 
+        const wrapper = document.getElementById('slideWrapper');
+
+        // Set widths dynamically
+        wrapper.style.width = `${totalSlides * 100}vw`;
+        slides.forEach(slide => {
+            slide.style.minWidth = `100vw`; 
+        });
+
+        function updateSlide() {
+            const offset = currentSlide * 100; 
+            wrapper.style.transform = `translateX(-${offset}vw)`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                prevSlide();
+            }
+        });
+        
+        updateSlide();
+    </script>
+</body>
+</html>
